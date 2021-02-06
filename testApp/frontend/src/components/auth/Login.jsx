@@ -29,18 +29,23 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleSubmit}>Submit</button>
+    <div id="login-container">
+      <div id="login">
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
+      <div id="login-buffer"></div>
     </div>
   );
 };

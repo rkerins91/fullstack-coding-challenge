@@ -46,25 +46,29 @@ const ComplaintsContainer = ({ token, userId }) => {
         setMethod: setConstituent,
       },
     };
-    const complaintSubObject = districtAPICalls[complaintType];
-    const token = localStorage.getItem("token");
-    const district = localStorage.getItem("district");
-    const { data } = await axios.get(complaintSubObject.url, {
-      "Content-Type": "application/json",
-      headers: { Authorization: `Token ${token}` },
-    });
-    let filteredData;
-    if (complaintType === "Top") {
-      filteredData = getTopComplaints(3, data[district - 1]);
-    } else if (complaintType === "Constituent") {
-      filteredData = data.filter(
-        (ele) => ele.council_dist?.slice(4) == district
-      );
-    } else {
-      filteredData = data.filter((ele) => ele.account.slice(4) == district);
+    try {
+      const complaintSubObject = districtAPICalls[complaintType];
+      const token = localStorage.getItem("token");
+      const district = localStorage.getItem("district");
+      const { data } = await axios.get(complaintSubObject.url, {
+        "Content-Type": "application/json",
+        headers: { Authorization: `Token ${token}` },
+      });
+      let filteredData;
+      if (complaintType === "Top") {
+        filteredData = getTopComplaints(3, data[district - 1]);
+      } else if (complaintType === "Constituent") {
+        filteredData = data.filter(
+          (ele) => ele.council_dist?.slice(4) == district
+        );
+      } else {
+        filteredData = data.filter((ele) => ele.account.slice(4) == district);
+      }
+      complaintSubObject.setMethod(filteredData);
+      setActive(complaintType);
+    } catch (error) {
+      console.error(error);
     }
-    complaintSubObject.setMethod(filteredData);
-    setActive(complaintType);
   };
 
   return (
