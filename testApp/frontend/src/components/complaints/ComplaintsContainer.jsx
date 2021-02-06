@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Toggle from "../Toggle";
-import axios from "../../axios-instance";
-import AllComplaints from "./AllComplaints";
+import axios from "axios";
+import Complaints from "./Complaints";
 import OpenComplaints from "./OpenComplaints";
 import ClosedComplaints from "./ClosedComplaints";
 import TopComplaints from "./TopComplaints";
@@ -11,18 +11,22 @@ const ComplaintsContainer = ({ token, userId }) => {
   const [open, setOpen] = useState([]);
   const [closed, setClosed] = useState([]);
   const [top, setTop] = useState([]);
-  const [isAccount, setIsAccount] = useState(true);
+  const [constituent, setConstituent] = useState([]);
   const [selectedComplaintSet, setSelectedComplaintSet] = useState("");
-  const [selectedLocationSet, setSelectedLocationSet] = useState("");
-  const complaintsSetToggle = ["All", "Open", "Closed", "Top"];
-  const locationSetToggle = ["District", "Constituents"];
+  const [active, setActive] = useState("");
+  const complaintsSetToggle = ["All", "Open", "Closed", "Top", "Constituent"];
 
-  const getComplaints = async (
-    complaintType = "All",
-    locationType = "District"
-  ) => {
+  const getTopComplaints = (number, data) => {
+    const array = [];
+    for (let key in data) {
+      array.push({ complaint: key, occurrences: data[key] });
+    }
+
+    return array.sort((a, b) => b.occurrences - a.occurrences).slice(0, number);
+  };
+
+  const getComplaints = async (complaintType = "All") => {
     setSelectedComplaintSet(complaintType);
-    console.log("inGetComplaints");
     const districtAPICalls = {
       All: { url: "api/complaints/", setMethod: setAll },
       Open: {
@@ -37,39 +41,50 @@ const ComplaintsContainer = ({ token, userId }) => {
         url: "api/complaints/topComplaints",
         setMethod: setTop,
       },
+      Constituent: {
+        url: "api/complaints/constituentComplaints",
+        setMethod: setConstituent,
+      },
     };
     const complaintSubObject = districtAPICalls[complaintType];
-
-    const { data } = await axios.get(
-      complaintSubObject.url,
-      // { params: { userId } },
-      {
-        "Content-Type": "application/json",
-        headers: { Authorization: `Token ${token}` },
-      }
-    );
-
-    complaintSubObject.setMethod(data);
+    const token = localStorage.getItem("token");
+    const district = localStorage.getItem("district");
+    const { data } = await axios.get(complaintSubObject.url, {
+      "Content-Type": "application/json",
+      headers: { Authorization: `Token ${token}` },
+    });
+    let filteredData;
+    if (complaintType === "Top") {
+      filteredData = getTopComplaints(3, data[district - 1]);
+    } else if (complaintType === "Constituent") {
+      filteredData = data.filter(
+        (ele) => ele.council_dist?.slice(4) == district
+      );
+    } else {
+      filteredData = data.filter((ele) => ele.account.slice(4) == district);
+    }
+    complaintSubObject.setMethod(filteredData);
+    setActive(complaintType);
   };
 
   return (
     <div id="complaints-container">
       <div id="toggle-container">
-        <Toggle options={complaintsSetToggle} getComplaints={getComplaints} />
-        <Toggle options={locationSetToggle} />
+        <Toggle
+          options={complaintsSetToggle}
+          getComplaints={getComplaints}
+          active={active}
+        />
       </div>
       <div id="complaints-table-container">
-        {selectedComplaintSet === "All" && (
-          <AllComplaints complaintData={all} />
-        )}
-        {selectedComplaintSet === "Open" && (
-          <OpenComplaints complaintData={open} />
-        )}
+        {selectedComplaintSet === "All" && <Complaints complaintData={all} />}
+        {selectedComplaintSet === "Open" && <Complaints complaintData={open} />}
         {selectedComplaintSet === "Closed" && (
-          <ClosedComplaints complaintData={closed} />
+          <Complaints complaintData={closed} />
         )}
-        {selectedComplaintSet === "Top" && (
-          <TopComplaints complaintData={top} />
+        {selectedComplaintSet === "Top" && <TopComplaints topData={top} />}
+        {selectedComplaintSet === "Constituent" && (
+          <Complaints complaintData={constituent} />
         )}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React from "react";
 
-const AllComplaints = ({ complaintData }) => {
-  return (
+const Complaints = ({ complaintData }) => {
+  return complaintData.length ? (
     <div>
       <table>
         <tr>
@@ -34,7 +34,9 @@ const AllComplaints = ({ complaintData }) => {
         })}
       </table>
     </div>
+  ) : (
+    <div>There are no complaints of this type</div>
   );
 };
 
-export default AllComplaints;
+export default Complaints;

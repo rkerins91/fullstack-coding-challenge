@@ -6,18 +6,15 @@ import Complaints from "./components/complaints/ComplaintsContainer";
 import "./App.css";
 
 function App() {
-  const [token, setToken] = useState("");
-  const [userId, setUserId] = useState(null);
-
   return (
     <Router>
       <Navbar></Navbar>
       <Switch>
         <Route path="/login">
-          <Login setToken={setToken} setUserId={setUserId} />
+          <Login />
         </Route>
         <Route path="/complaints">
-          <Complaints token={token} userId={userId} />
+          <Complaints />
         </Route>
       </Switch>
     </Router>

@@ -8,17 +8,8 @@ from rest_framework import status
 
 class ComplaintViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
-    serializer_class = UserSerializer
 
     def list(self, request):
-        # Get all complaints from the user's district
-        # Get user district from UserProfile
-        # user_dist = UserProfile.objects.get(id=request.data["id"])
-        # district = UserProfileSerializer(user_dist).data.get('district')
-        # Get complaints where account is User's district
-
-        # MAY HAVE TO FILTER ON FRONT END
-        # print(request.)
         queryset = Complaint.objects.all()
         serializer = ComplaintSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -26,26 +17,17 @@ class ComplaintViewSet(viewsets.ModelViewSet):
 
 class OpenCasesViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
-    serializer_class = UserSerializer
 
     def list(self, request):
-        # Get all complaints from the user's district
-        # Get user district from UserProfile
-        queryset = Complaint.objects.all().filter(
-            closedate=None,
-            account="NYCC" + district
-        )
+        queryset = Complaint.objects.all().filter(closedate=None)
         serializer = ComplaintSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
 class ClosedCasesViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
-    serializer_class = UserSerializer
 
     def list(self, request):
-        # Get all complaints from the user's district
-        # Get user district from UserProfile
         queryset = Complaint.objects.all().exclude(closedate=None)
         serializer = ComplaintSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -53,36 +35,46 @@ class ClosedCasesViewSet(viewsets.ModelViewSet):
 
 class TopComplaintTypeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
-    serializer_class = UserSerializer
 
     def list(self, request):
-        # Get all complaints from the user's district
-        # Get user district from UserProfile
-        complaintsMap = {}
-        user_dist = UserProfile.objects.get(id=request.data["id"])
-        district = UserProfileSerializer(user_dist).data.get('district')
-        complaint_types = Complaint.objects.values(
-            'complaint_type').filter(complaint_type__isnull=False, account="NYCC" + district)
 
-        # Set each category of different complaint types for each district and count number of each complaint category for each district
+        districtList = [None] * 51
+        # for i in range(51):
+        #     districtList[i] = {}
+
+        complaint_types = Complaint.objects.values(
+            'complaint_type', 'account').exclude(complaint_type=None)
+
         for complaint in complaint_types:
+            district = complaint['account']
+            districtNum = district[4:]
+
+            districtIndex = int(districtNum) - 1
+            districtMap = districtList[districtIndex]
+            if districtMap == None:
+                districtMap = {}
             complaint_type = complaint['complaint_type']
-            print(complaint_type)
-            if complaint_type not in complaintsMap:
-                # print('iffffff')
-                complaintsMap[complaint_type] = 1
-                print(complaintsMap[complaint_type])
+
+            if complaint_type not in districtMap:
+                districtMap[complaint_type] = 1
             else:
-                # print('elseeeee')
-                complaintsMap[complaint_type] += 1
-                print(complaintsMap[complaint_type])
-        # print(complaintsMap)
+                districtMap[complaint_type] += 1
+
+            districtList[districtIndex] = districtMap
 
         # for complaint in complaintsMap:
-        print(complaintsMap)
 
         # queryset = Complaint.objects.all().filter(
         #     account="NYCC" + request.data['account'])
 
         # serializer = ComplaintSerializer(queryset, many=True)
-        return Response("hi")
+        return Response(districtList)
+
+
+class ConstituentComplaintViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get']
+
+    def list(self, request):
+        queryset = Complaint.objects.all()
+        serializer = ComplaintSerializer(queryset, many=True)
+        return Response(serializer.data)

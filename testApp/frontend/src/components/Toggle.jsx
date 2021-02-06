@@ -6,10 +6,10 @@ const Toggle = ({ options, active, getComplaints }) => {
       {options.map((ele) => (
         <div
           className={
-            "toggle-element " + (active === ele && "toggle-element-selected")
+            "toggle-element " +
+            (active === ele ? "toggle-element-selected" : "")
           }
           onClick={() => {
-            console.log("getting ele", ele);
             getComplaints(ele);
           }}
         >
