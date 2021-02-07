@@ -8,9 +8,10 @@ const Login = () => {
   const history = useHistory();
 
   const storeData = (password, token) => {
-    let splitPassword = password.split("-");
+    const splitPassword = password.split("-");
     let district = splitPassword[1];
-
+    district = Number(district);
+    console.log(district);
     localStorage.setItem("district", district);
     localStorage.setItem("token", token);
   };

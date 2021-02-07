@@ -59,10 +59,14 @@ const ComplaintsContainer = ({ token, userId }) => {
         filteredData = getTopComplaints(3, data[district - 1]);
       } else if (complaintType === "Constituent") {
         filteredData = data.filter(
-          (ele) => ele.council_dist?.slice(4) == district
+          (ele) => Number(ele.council_dist?.slice(4)) == district
         );
       } else {
-        filteredData = data.filter((ele) => ele.account.slice(4) == district);
+        filteredData = data.filter((ele) => {
+          console.log(district, Number(ele.account.slice(4)));
+
+          return Number(ele.account.slice(4)) == district;
+        });
       }
       complaintSubObject.setMethod(filteredData);
       setActive(complaintType);
